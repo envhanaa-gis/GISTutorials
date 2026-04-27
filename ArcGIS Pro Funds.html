@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسار GIS — ArcGIS Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0faf5;
+    --surface: #ffffff;
+    --surface2: #e8f7ef;
+    --border: #c2e8d4;
+    --accent: #20c67a;
+    --accent2: #30a973;
+    --accent3: #81cfb1;
+    --green: #30a973;
+    --amber: #f59e0b;
+    --red: #e05a5a;
+    --text: #0d2e1e;
+    --muted: #5a8a72;
+    --muted2: #2e6e50;
+    --font: 'Cairo', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 280px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform .3s ease;
+    box-shadow: -2px 0 16px rgba(32,198,122,.07);
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #20c67a, #30a973);
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+
+  .sidebar-logo h1 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.4;
+  }
+
+  .sidebar-logo p {
+    font-size: 11px;
+    color: rgba(255,255,255,.75);
+    margin-top: 2px;
+  }
+
+  .progress-summary {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .progress-summary .label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  .prog-bar {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .stat-num {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent2);
+    font-family: var(--mono);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 1px;
+    font-weight: 600;
+  }
+
+  .nav-section {
+    padding: 12px 12px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .nav-phase { padding: 4px 8px; }
+
+  .phase-header-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s;
+    margin-bottom: 2px;
+  }
+
+  .phase-header-nav:hover { background: var(--surface2); }
+  .phase-header-nav.active { background: rgba(32,198,122,.12); border: 1px solid rgba(32,198,122,.2); }
+
+  .phase-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .phase-nav-title { font-size: 12px; font-weight: 700; flex: 1; color: var(--text); }
+  .phase-count { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+
+  .lesson-list { padding: 0 0 4px 28px; }
+
+  .lesson-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--muted);
+    transition: all .15s;
+    margin-bottom: 1px;
+    font-weight: 500;
+  }
+
+  .lesson-nav-item:hover { background: var(--surface2); color: var(--text); }
+  .lesson-nav-item.active { background: rgba(32,198,122,.12); color: var(--accent2); font-weight: 700; }
+  .lesson-nav-item.done { color: var(--green); }
+
+  .check-icon {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+  }
+
+  .check-icon.done { background: var(--green); border-color: var(--green); color: white; }
+  .check-icon.active { border-color: var(--accent); }
+
+  /* MAIN */
+  .main {
+    margin-right: 280px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(32,198,122,.06);
+  }
+
+  .breadcrumb {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+
+  .breadcrumb span { color: var(--text); font-weight: 700; }
+
+  .topbar-actions { display: flex; gap: 8px; }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: var(--font);
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+  }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--muted2);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent3); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    box-shadow: 0 2px 8px rgba(32,198,122,.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(32,198,122,.4); }
+  .btn-primary:disabled { opacity: .35; cursor: default; transform: none; box-shadow: none; }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    padding: 40px 48px;
+    max-width: 860px;
+  }
+
+  .lesson-header { margin-bottom: 32px; }
+
+  .phase-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .lesson-title {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .lesson-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .meta-item { display: flex; align-items: center; gap: 5px; }
+
+  .lesson-body {
+    line-height: 1.85;
+    font-size: 15px;
+    color: var(--muted2);
+  }
+
+  .lesson-body h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lesson-body h3::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .lesson-body p { margin-bottom: 14px; color: var(--muted2); }
+
+  /* INFO BOX */
+  .info-box {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border: 1px solid;
+    font-size: 14px;
+  }
+
+  .info-box.blue {
+    background: rgba(129,207,177,.12);
+    border-color: rgba(129,207,177,.5);
+    color: var(--accent2);
+  }
+
+  .info-box.green {
+    background: rgba(32,198,122,.1);
+    border-color: rgba(32,198,122,.4);
+    color: var(--accent2);
+  }
+
+  .info-box.amber {
+    background: rgba(245,158,11,.08);
+    border-color: rgba(245,158,11,.3);
+    color: #b45309;
+  }
+
+  .info-box-title {
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d2e1e;
+    border: 1px solid rgba(32,198,122,.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: #81cfb1;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+
+  .code-block .comment { color: rgba(129,207,177,.5); }
+  .code-block .string { color: #a8e6cf; }
+  .code-block .keyword { color: #20c67a; }
+
+  /* STEP CARDS */
+  .steps-grid { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: border-color .2s, box-shadow .2s;
+  }
+
+  .step-card:hover { border-color: var(--accent3); box-shadow: 0 2px 12px rgba(32,198,122,.1); }
+
+  .step-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(32,198,122,.12);
+    color: var(--accent2);
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    border: 1px solid rgba(32,198,122,.25);
+  }
+
+  .step-body { flex: 1; }
+  .step-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--muted2); line-height: 1.6; }
+
+  /* CONCEPT CARDS */
+  .concepts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .concept-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(32,198,122,.15);
+  }
+
+  .concept-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .concept-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .concept-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* QUIZ */
+  .quiz-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 28px 0;
+    box-shadow: 0 2px 12px rgba(32,198,122,.06);
+  }
+
+  .quiz-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .quiz-q { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; line-height: 1.5; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+
+  .quiz-opt {
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--muted2);
+    transition: all .15s;
+    text-align: right;
+    font-weight: 500;
+    background: var(--surface2);
+  }
+
+  .quiz-opt:hover { border-color: var(--accent); color: var(--text); background: rgba(32,198,122,.08); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(32,198,122,.12); color: var(--accent2); font-weight: 700; }
+  .quiz-opt.wrong { border-color: var(--red); background: rgba(224,90,90,.08); color: #b91c1c; }
+  .quiz-opt.disabled { pointer-events: none; }
+
+  .quiz-feedback {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(32,198,122,.1); color: var(--accent2); border: 1px solid rgba(32,198,122,.3); }
+  .quiz-feedback.bad { background: rgba(224,90,90,.08); color: #b91c1c; border: 1px solid rgba(224,90,90,.25); }
+
+  /* COMPLETE */
+  .complete-section {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .complete-hint { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  .btn-complete {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font);
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(32,198,122,.35);
+  }
+
+  .btn-complete:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(32,198,122,.45); }
+  .btn-complete.done-state { background: var(--surface2); color: var(--green); cursor: default; transform: none; box-shadow: none; border: 1px solid var(--border); font-weight: 700; }
+
+  /* WELCOME */
+  .welcome-screen { padding: 60px 48px; max-width: 820px; }
+
+  .welcome-title {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .welcome-title .accent { color: var(--accent); }
+  .welcome-title .accent2 { color: var(--accent2); }
+
+  .welcome-desc {
+    font-size: 16px;
+    color: var(--muted2);
+    line-height: 1.8;
+    margin-bottom: 36px;
+    max-width: 560px;
+    font-weight: 500;
+  }
+
+  .phases-overview { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+
+  .phase-overview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 1px 4px rgba(32,198,122,.06);
+  }
+
+  .phase-overview-card:hover {
+    border-color: var(--accent);
+    transform: translateX(-4px);
+    box-shadow: 0 4px 16px rgba(32,198,122,.15);
+  }
+
+  .phase-ov-num {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    font-family: var(--mono);
+    flex-shrink: 0;
+  }
+
+  .phase-ov-body { flex: 1; }
+  .phase-ov-title { font-size: 15px; font-weight: 800; color: var(--text); }
+  .phase-ov-sub { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+  .phase-ov-count { font-size: 12px; color: var(--muted); font-family: var(--mono); font-weight: 700; }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    padding: 14px 36px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font);
+    transition: all .2s;
+    box-shadow: 0 4px 20px rgba(32,198,122,.35);
+  }
+
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(32,198,122,.45); }
+
+  hr.sec { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* TABLE */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+
+  .compare-table th {
+    background: rgba(32,198,122,.1);
+    padding: 10px 14px;
+    text-align: right;
+    font-weight: 800;
+    color: var(--accent2);
+    border: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .compare-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    color: var(--muted2);
+    vertical-align: top;
+    line-height: 1.6;
+    background: var(--surface);
+    font-weight: 500;
+  }
+
+  .compare-table tr:hover td { background: var(--surface2); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(32,198,122,.4);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .menu-btn {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-right: 0; }
+    .content { padding: 24px 20px; }
+    .welcome-screen { padding: 32px 20px; }
+    .welcome-title { font-size: 28px; }
+    .concepts-grid { grid-template-columns: 1fr; }
+    .menu-btn { display: block; }
+    .topbar { padding: 12px 20px; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .content, .welcome-screen { animation: fadeIn .4s ease; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: rgba(255,255,255,.9);
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <span class="live-dot"></span>
+      GIS Community Academy
+    </div>
+    <h1>مسار تعلم ArcGIS Pro</h1>
+    <p>من الأساسيات إلى التحليل المتقدم</p>
+  </div>
+
+  <div class="progress-summary">
+    <div class="label">
+      <span>التقدم الكلي</span>
+      <span id="pct-label" style="font-family:var(--mono);color:var(--accent2)">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num" id="stat-done">0</div>
+        <div class="stat-label">مكتمل</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-left">0</div>
+        <div class="stat-label">متبقي</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">إجمالي</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="nav-content"></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div class="breadcrumb" id="breadcrumb">
+        <span>الرئيسية</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="btn-prev" onclick="navigate(-1)" disabled>→ السابق</button>
+      <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">التالي ←</button>
+    </div>
+  </div>
+
+  <div id="main-content"></div>
+</main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const curriculum = [
+  {
+    id: 'p1',
+    title: 'واجهة ArcGIS Pro والخرائط',
+    color: '#20c67a',
+    bg: 'rgba(32,198,122,.12)',
+    dot: '#20c67a',
+    lessons: [
+      {
+        id: 'p1l1',
+        title: 'واجهة البرنامج — أول نظرة',
+        mins: 15,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(32,198,122,.12);color:#30a973">المرحلة 1 — الأساسيات</div>
+            <div class="lesson-title">واجهة ArcGIS Pro — أول نظرة</div>
+            <div class="lesson-meta">
+              <div class="meta-item">⏱ 15 دقيقة</div>
+              <div class="meta-item">🎯 مبتدئ</div>
+            </div>
+          </div>
+          <div class="lesson-body">
+            <p>لما بتفتح ArcGIS Pro لأول مرة هتلاقي الواجهة مقسمة لمناطق رئيسية — كل منطقة ليها وظيفة محددة. الفهم ده هيوفر عليك وقت كتير بعدين.</p>
+            <h3>المناطق الرئيسية في الواجهة</h3>
+            <div class="concepts-grid">
+              <div class="concept-card" onclick="showToast('الـ Ribbon هو شريط الأدوات العلوي — شبه Microsoft Office')">
+                <div class="concept-icon" style="background:rgba(32,198,122,.12)">📋</div>
+                <div class="concept-title">الـ Ribbon</div>
+                <div class="concept-desc">شريط الأدوات العلوي — بيتغير حسب إيه اللي شغال تعمله. فيه Tabs زي Map و Analysis و Insert</div>
+              </div>
+              <div class="concept-card" onclick="showToast('الـ Contents Pane = قائمة كل الطبقات في مشروعك')">
+                <div class="concept-icon" style="background:rgba(48,169,115,.12)">📂</div>
+                <div class="concept-title">Contents Pane</div>
+                <div class="concept-desc">بيكون على الشمال عادةً — بيعرض كل الـ Layers في الخريطة وترتيبها</div>
+              </div>
+              <div class="concept-card" onclick="showToast('الـ Map View هو الكانفاس اللي بتشوف فيه خريطتك')">
+                <div class="concept-icon" style="background:rgba(129,207,177,.15)">🗺️</div>
+                <div class="concept-title">Map View</div>
+                <div class="concept-desc">المساحة الرئيسية في المنتصف — هنا بتشوف وبتشتغل على الخريطة</div>
+              </div>
+              <div class="concept-card" onclick="showToast('الـ Catalog Pane = متصفح ملفاتك والـ GDB والـ Toolboxes')">
+                <div class="concept-icon" style="background:rgba(32,198,122,.08)">🗄️</div>
+                <div class="concept-title">Catalog Pane</div>
+                <div class="concept-desc">زي الـ File Explorer — بتتصفح فيه بيانات مشروعك والـ GDB والـ Toolboxes</div>
+              </div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 نصيحة مهمة</div>
+              ArcGIS Pro بيشتغل بنظام الـ <strong>Project</strong> — كل مشروع عبارة عن ملف .aprx بيحفظ كل حاجة: الخرائط والـ Layouts والاتصال بالبيانات. الـ Project مش بيحفظ البيانات نفسها — بس بيحفظ المسار ليها.
+            </div>
+            <h3>أهم الـ Tabs في الـ Ribbon</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Map Tab</div><div class="step-desc">اللي هتستخدمه أكتر — فيه Navigate (Pan/Zoom)، Inquiry (Select/Identify)، Layer (إضافة Data)</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Analysis Tab</div><div class="step-desc">ده بوابة الـ Geoprocessing — فيه Tools وModelBuilder وكل أدوات التحليل المكاني</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">Insert Tab</div><div class="step-desc">بتضيف منه Map Views جديدة، Layouts للطباعة، Charts لتحليل البيانات</div></div></div>
+              <div class="step-card"><div class="step-num">4</div><div class="step-body"><div class="step-title">Edit Tab</div><div class="step-desc">بتدخل منه وضع التحرير — رسم وتعديل الـ Features يدوياً على الخريطة</div></div></div>
+            </div>
+            <div class="info-box amber">
+              <div class="info-box-title">⚠️ خد بالك</div>
+              الـ Context Tabs (زي Feature Layer أو Raster Layer) بتظهر فوق تلقائياً لما بتضغط على Layer معين — مش ثابتة في الـ Ribbon دايماً.
+            </div>
+            <div class="quiz-box" id="quiz-p1l1">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">إيه الـ Pane اللي بيعرض قائمة الـ Layers في مشروعك؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l1',false)">الـ Ribbon</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l1',true)">الـ Contents Pane</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l1',false)">الـ Catalog Pane</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l1',false)">الـ Map View</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p1l1"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p1l2',
+        title: 'أنواع الخرائط — Map vs Scene vs Layout',
+        mins: 20,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(32,198,122,.12);color:#30a973">المرحلة 1</div>
+            <div class="lesson-title">أنواع الخرائط — Map vs Scene vs Layout</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 20 دقيقة</div><div class="meta-item">🎯 مبتدئ</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>في ArcGIS Pro في 3 أنواع رئيسية من الـ Views — كل نوع ليه غرض مختلف وبتستخدمه في حالة معينة.</p>
+            <table class="compare-table">
+              <thead><tr><th>النوع</th><th>الاستخدام</th><th>متى تستخدمه؟</th></tr></thead>
+              <tbody>
+                <tr><td><span class="tag" style="background:rgba(32,198,122,.15);color:#30a973">Map</span></td><td>خريطة ثنائية الأبعاد (2D)</td><td>التحليل المكاني، تصحيح البيانات، معظم شغلك اليومي</td></tr>
+                <tr><td><span class="tag" style="background:rgba(129,207,177,.2);color:#1a7a52">Scene</span></td><td>خريطة ثلاثية الأبعاد (3D)</td><td>تصور المباني والتضاريس والنماذج 3D</td></tr>
+                <tr><td><span class="tag" style="background:rgba(48,169,115,.15);color:#1a5c3a">Layout</span></td><td>صفحة الطباعة والتصدير</td><td>إخراج الخريطة النهائية بـ Legend و Scale Bar</td></tr>
+              </tbody>
+            </table>
+            <h3>الـ Map View — الأساس</h3>
+            <p>ده اللي هتكون فيه معظم الوقت. فيه كل أدوات التحليل والـ Editing. لما بتعمل New Map من Insert Tab — بييجي Map View تلقائي.</p>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 مثال عملي</div>
+              تخيل بتعمل مشروع لمتابعة شبكة صرف صحي. هتفتح <strong>Map</strong> عشان ترسم الخطوط وتحلل الشبكة، وبعدين تعمل <strong>Layout</strong> عشان تطبع التقرير النهائي بالـ Legend والـ Title وكل التفاصيل.
+            </div>
+            <h3>إزاي تعمل Layout احترافي؟</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Insert → New Layout</div><div class="step-desc">اختار حجم الورقة — A4 Portrait أو A3 Landscape حسب الخريطة</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Insert → Map Frame</div><div class="step-desc">ترسم مستطيل على الـ Layout وبيبقى جواه الخريطة بتاعتك</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">إضافة العناصر</div><div class="step-desc">Legend → Scale Bar → North Arrow → Title — كلها من Insert Tab في الـ Layout</div></div></div>
+              <div class="step-card"><div class="step-num">4</div><div class="step-body"><div class="step-title">Share → Export Layout</div><div class="step-desc">تصدير PDF بجودة 300 DPI أو PNG — ده اللي هتبعته للعميل أو هتطبعه</div></div></div>
+            </div>
+            <div class="quiz-box" id="quiz-p1l2">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عايز تعمل خريطة نهائية تطبعها بـ Legend و Scale Bar — إيه النوع اللي تستخدمه؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l2',false)">Map View</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l2',false)">Scene View</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l2',true)">Layout</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l2',false)">Catalog Pane</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p1l2"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p1l3',
+        title: 'أنظمة الإحداثيات — CRS',
+        mins: 25,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(32,198,122,.12);color:#30a973">المرحلة 1</div>
+            <div class="lesson-title">أنظمة الإحداثيات — CRS بالبساطة</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 25 دقيقة</div><div class="meta-item">🎯 مبتدئ → متوسط</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>النقطة دي بيتعثر فيها كتير من المبتدئين — بس لو فهمتها صح هتتجنب أخطاء كبيرة في مشاريعك.</p>
+            <h3>Geographic vs Projected — الفرق الجوهري</h3>
+            <div class="concepts-grid">
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(32,198,122,.12)">🌍</div><div class="concept-title">Geographic CRS</div><div class="concept-desc">إحداثيات دائرة وخط الطول (Lat/Lon) — بيمثل الكرة الأرضية. مثال: WGS 1984</div></div>
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(48,169,115,.12)">📐</div><div class="concept-title">Projected CRS</div><div class="concept-desc">إسقاط الكرة على سطح مستوي — بيدي إحداثيات بالمتر. مثال: UTM Zone 36N</div></div>
+            </div>
+            <div class="info-box amber">
+              <div class="info-box-title">⚠️ القاعدة الذهبية</div>
+              لو عايز تحسب مساحات أو مسافات — لازم تستخدم Projected CRS (بالمتر). Geographic CRS بيدي نتايج غلط للمسافات.
+            </div>
+            <h3>أشهر الأنظمة المستخدمة في مصر</h3>
+            <table class="compare-table">
+              <thead><tr><th>النظام</th><th>الكود</th><th>الاستخدام</th></tr></thead>
+              <tbody>
+                <tr><td>WGS 1984</td><td><span style="font-family:var(--mono);color:var(--accent2)">EPSG:4326</span></td><td>GPS والـ Web Maps والـ KML</td></tr>
+                <tr><td>UTM Zone 36N</td><td><span style="font-family:var(--mono);color:var(--accent2)">EPSG:32636</span></td><td>شمال مصر — المسافات والمساحات</td></tr>
+                <tr><td>UTM Zone 35N</td><td><span style="font-family:var(--mono);color:var(--accent2)">EPSG:32635</span></td><td>غرب مصر (الحدود الليبية)</td></tr>
+                <tr><td>Egypt Red Belt</td><td><span style="font-family:var(--mono);color:var(--accent2)">EPSG:22992</span></td><td>النظام القديم المصري — في بعض البيانات القديمة</td></tr>
+              </tbody>
+            </table>
+            <div class="info-box green">
+              <div class="info-box-title">✅ ArcGIS Pro بيتعامل مع الفرق تلقائياً</div>
+              ArcGIS Pro عنده خاصية On-the-fly Projection — بتضيف Layer بـ WGS84 على خريطة UTM وهيعرضها صح تلقائياً. بس لو هتحسب مساحات — لازم تحول فعلياً.
+            </div>
+            <div class="quiz-box" id="quiz-p1l3">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عايز تحسب مساحة أرض في مصر — إيه الـ CRS المناسب؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l3',false)">WGS 1984 (EPSG:4326)</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l3',true)">UTM Zone 36N (EPSG:32636)</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p1l3',false)">أي نظام — الفرق مش مهم</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p1l3"></div>
+            </div>
+          </div>`
+      }
+    ]
+  },
+  {
+    id: 'p2',
+    title: 'GDB والبيانات والـ Domains',
+    color: '#30a973',
+    bg: 'rgba(48,169,115,.12)',
+    dot: '#30a973',
+    lessons: [
+      {
+        id: 'p2l1',
+        title: 'Vector vs Raster — نوعا البيانات الأساسيان',
+        mins: 20,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(48,169,115,.12);color:#30a973">المرحلة 2 — البيانات</div>
+            <div class="lesson-title">Vector vs Raster — نوعا البيانات الأساسيان</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 20 دقيقة</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>قبل ما تبدأ تشتغل بجد — لازم تعرف إن في نوعين أساسيين من البيانات الجغرافية. الاختيار الغلط ممكن يضيع عليك وقت كبير.</p>
+            <table class="compare-table">
+              <thead><tr><th></th><th>Vector</th><th>Raster</th></tr></thead>
+              <tbody>
+                <tr><td>الشكل</td><td>نقط وخطوط ومضلعات</td><td>شبكة من الـ Pixels</td></tr>
+                <tr><td>التخزين</td><td>Feature Class في GDB</td><td>ملف صورة (TIFF, IMG)</td></tr>
+                <tr><td>الأمثلة</td><td>حدود المحافظات، شبكة الطرق، نقط الآبار</td><td>صور الأقمار الصناعية، النماذج الرقمية للارتفاع DEM</td></tr>
+                <tr><td>الاستخدام</td><td>البيانات الإدارية والشبكات والمرافق</td><td>التحليل البيئي والتضاريس</td></tr>
+              </tbody>
+            </table>
+            <h3>الـ Vector — الأنواع الثلاثة</h3>
+            <div class="concepts-grid">
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(32,198,122,.12)">📍</div><div class="concept-title">Point (نقطة)</div><div class="concept-desc">موقع واحد على الخريطة. أمثلة: بئر، برج كهرباء، محطة مترو</div></div>
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(48,169,115,.12)">〰️</div><div class="concept-title">Line (خط)</div><div class="concept-desc">مسار بين نقطتين أو أكتر. أمثلة: طريق، خط صرف، نهر</div></div>
+              <div class="concept-card" style="grid-column:span 2"><div class="concept-icon" style="background:rgba(129,207,177,.15)">⬟</div><div class="concept-title">Polygon (مضلع)</div><div class="concept-desc">مساحة مغلقة. أمثلة: حدود محافظة، قطعة أرض، مبنى، منطقة حماية</div></div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 قاعدة مهمة</div>
+              Feature Class واحدة = نوع واحد فقط من الـ Geometry. مش ممكن تخلط نقط وخطوط في Feature Class واحدة. كل نوع في Feature Class منفصلة.
+            </div>
+            <div class="quiz-box" id="quiz-p2l1">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عايز ترسم شبكة مواسير مياه — إيه النوع المناسب؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l1',false)">Raster</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l1',false)">Point</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l1',true)">Line</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l1',false)">Polygon</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p2l1"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p2l2',
+        title: 'الـ Geodatabase (GDB) — بنية البيانات',
+        mins: 30,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(48,169,115,.12);color:#30a973">المرحلة 2</div>
+            <div class="lesson-title">الـ Geodatabase — بنية البيانات الاحترافية</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 30 دقيقة</div><div class="meta-item">🎯 مهم جداً</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>الـ GDB هو أساس أي مشروع GIS احترافي. بدل ما تفضل ملفات SHP متفرقة هنا وهناك — الـ GDB بيجمع كل حاجة في مكان واحد منظم.</p>
+            <h3>هيكل الـ Geodatabase</h3>
+            <div class="code-block">
+<span class="comment">// هيكل الـ File Geodatabase</span>
+📁 MyProject.gdb
+├── 📁 Infrastructure     <span class="comment">← Feature Dataset</span>
+│   ├── 📋 Water_Pipes    <span class="comment">← Feature Class (Line)</span>
+│   ├── 📋 Water_Valves   <span class="comment">← Feature Class (Point)</span>
+│   └── 📋 Service_Areas  <span class="comment">← Feature Class (Polygon)</span>
+├── 📁 Administrative
+│   ├── 📋 Governorates
+│   └── 📋 Districts
+└── 📋 Survey_Points      <span class="comment">← Feature Class مباشرة</span>
+            </div>
+            <h3>إزاي تعمل GDB جديد؟</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Catalog Pane → كليك يمين على المجلد</div><div class="step-desc">New → File Geodatabase — اختار اسم واضح زي "ProjectName_Data.gdb"</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">عمل Feature Dataset (اختياري بس مفيد)</div><div class="step-desc">كليك يمين على الـ GDB → New → Feature Dataset. مهم لو عندك بيانات ليها علاقة ببعض</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">عمل Feature Class</div><div class="step-desc">كليك يمين على الـ GDB أو الـ Dataset → New → Feature Class → اختار النوع والـ CRS</div></div></div>
+            </div>
+            <div class="info-box green">
+              <div class="info-box-title">✅ مزايا الـ GDB على الـ Shapefile</div>
+              اسماء الحقول مش محدودة بـ 10 حروف، بيدعم Domains و Subtypes، بيدعم Topology، ملف واحد بدل 4-6 ملفات، وبيدعم Long Integer والـ Date Fields بشكل أفضل.
+            </div>
+            <div class="quiz-box" id="quiz-p2l2">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">ما الفائدة من استخدام Feature Dataset داخل الـ GDB؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l2',false)">تسريع البرنامج</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l2',true)">تنظيم الـ Feature Classes المتعلقة ببعض في مكان واحد</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l2',false)">تحويل البيانات لـ Raster</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p2l2"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p2l3',
+        title: 'الـ Domains والـ Subtypes',
+        mins: 25,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(48,169,115,.12);color:#30a973">المرحلة 2</div>
+            <div class="lesson-title">الـ Domains والـ Subtypes — جودة البيانات</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 25 دقيقة</div><div class="meta-item">🎯 متوسط</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>الـ Domains هي قائمة القيم المسموح بيها في حقل معين — بتمنع إدخال بيانات غلط وبتوحد البيانات على مستوى المشروع كله.</p>
+            <h3>نوعا الـ Domains</h3>
+            <div class="concepts-grid">
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(32,198,122,.12)">📝</div><div class="concept-title">Coded Value Domain</div><div class="concept-desc">قائمة اختيارات محددة. مثال: نوع الأنبوب = [PVC, حديد, خرسانة, أسبستوس]</div></div>
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(129,207,177,.15)">📊</div><div class="concept-title">Range Domain</div><div class="concept-desc">نطاق رقمي. مثال: قطر الأنبوب يكون بين 50mm و 2000mm فقط</div></div>
+            </div>
+            <h3>إزاي تعمل Domain؟</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Catalog Pane → كليك يمين على الـ GDB</div><div class="step-desc">Properties → Domains Tab → اضغط + عشان تضيف Domain جديد</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">حدد اسم ونوع البيانات</div><div class="step-desc">Domain Name (بدون مسافات)، Field Type (Text أو Short Integer)، Domain Type (Coded أو Range)</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">ربط الـ Domain بالحقل</div><div class="step-desc">في الـ Feature Class → Fields → اختار الحقل → في خاصية Domain اختار الـ Domain اللي عملته</div></div></div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 مثال واقعي</div>
+              بدل ما تعمل 3 Feature Classes — تعمل Feature Class واحدة "Roads" بـ Subtype بيفرق بينهم، وكل Subtype يكون له Speed_Limit Range Domain مختلف.
+            </div>
+            <div class="quiz-box" id="quiz-p2l3">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عايز تضمن إن قيمة "نوع التربة" تكون دايماً من قائمة محددة — إيه النوع المناسب؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l3',true)">Coded Value Domain</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l3',false)">Range Domain</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p2l3',false)">Subtype</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p2l3"></div>
+            </div>
+          </div>`
+      }
+    ]
+  },
+  {
+    id: 'p3',
+    title: 'تحويل البيانات للـ GDB',
+    color: '#81cfb1',
+    bg: 'rgba(129,207,177,.15)',
+    dot: '#81cfb1',
+    lessons: [
+      {
+        id: 'p3l1',
+        title: 'SHP و AutoCAD → GDB',
+        mins: 30,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(129,207,177,.15);color:#30a973">المرحلة 3 — التحويل</div>
+            <div class="lesson-title">SHP و AutoCAD DWG → GDB</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 30 دقيقة</div><div class="meta-item">🎯 شائع جداً</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>دي من أكتر العمليات اللي هتعملها يومياً. معظم البيانات اللي هتيجيلك هتكون إما SHP أو DWG — وانت مهمتك تحولها لـ GDB.</p>
+            <h3>تحويل SHP لـ GDB</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Analysis → Tools → ابحث عن "Feature Class to Feature Class"</div><div class="step-desc">ده الأداة المباشرة لنقل Feature Class من مكان لتاني</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Input Features = ملف الـ SHP</div><div class="step-desc">Output Location = مسار الـ GDB، Output Name = الاسم الجديد</div></div></div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 أسرع طريقة</div>
+              لو عندك أكتر من SHP: Catalog Pane → حدد كل الـ SHP files → كليك يمين → Export → To Geodatabase (Multiple). ده بيحول الكل دفعة واحدة.
+            </div>
+            <h3>تحويل AutoCAD DWG لـ GDB</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">إضافة الـ DWG للخريطة</div><div class="step-desc">Map → Add Data → اختار ملف الـ DWG. هيتقسم تلقائياً لـ Point / Polyline / Polygon / Annotation</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">تحديد الـ CRS الصح</div><div class="step-desc">الـ DWG مفيهوش CRS غالباً — لازم تحدد نظام الإحداثيات المناسب (Define Projection)</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">CAD to Geodatabase Tool</div><div class="step-desc">Analysis → Tools → ابحث "CAD To Geodatabase" — ده بيحول الـ DWG كله دفعة واحدة</div></div></div>
+              <div class="step-card"><div class="step-num">4</div><div class="step-body"><div class="step-title">تنظيف البيانات</div><div class="step-desc">بعد التحويل — راجع الـ Attribute Table وامسح الـ Entities الفاضية أو الغلط</div></div></div>
+            </div>
+            <div class="info-box amber">
+              <div class="info-box-title">⚠️ مشكلة شائعة مع الـ CAD</div>
+              الـ AutoCAD بيحفظ الكل في Layer واحدة أو بيميز بـ Layer Names. في GIS كل نوع في Feature Class منفصلة. هتحتاج تعمل Select by Attributes وتصدر كل نوع لوحده.
+            </div>
+            <div class="quiz-box" id="quiz-p3l1">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">إيه أول حاجة تعملها لما تضيف DWG لـ ArcGIS Pro؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l1',false)">تحويله فوراً لـ GDB</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l1',true)">التحقق من وجود الـ CRS الصح وتعريفه لو مش موجود</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l1',false)">حذف الـ Annotation Layers</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p3l1"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p3l2',
+        title: 'KMZ و Excel و CSV → GDB',
+        mins: 25,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(129,207,177,.15);color:#30a973">المرحلة 3</div>
+            <div class="lesson-title">KMZ و Excel و CSV → GDB</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 25 دقيقة</div></div>
+          </div>
+          <div class="lesson-body">
+            <h3>تحويل KML / KMZ</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">KML To Layer</div><div class="step-desc">Analysis → Tools → "KML To Layer" — بيحول الـ KMZ لـ Layer Group في البرنامج</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Export لـ GDB</div><div class="step-desc">كليك يمين على الـ Layer → Data → Export Features → اختار مسار الـ GDB</div></div></div>
+            </div>
+            <hr class="sec">
+            <h3>تحويل Excel / CSV</h3>
+            <div class="concepts-grid">
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(32,198,122,.12)">📍</div><div class="concept-title">فيه إحداثيات X,Y</div><div class="concept-desc">استخدم "XY Table To Point" — بتحدد العمود الخاص بـ X وعمود Y وبييجي Layer نقط</div></div>
+              <div class="concept-card"><div class="concept-icon" style="background:rgba(129,207,177,.15)">📊</div><div class="concept-title">مفيهوش إحداثيات</div><div class="concept-desc">بيدخل كجدول بيانات فقط — استخدم "Table To Table" وبعدين اعمل Join بـ Feature Class موجودة</div></div>
+            </div>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Add Data → اختار ملف الـ Excel</div><div class="step-desc">هيعرضلك الـ Sheets الموجودة — اختار الـ Sheet المناسبة</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">XY Table To Point</div><div class="step-desc">حدد عمود الـ X (Longitude) وعمود الـ Y (Latitude) والـ CRS (WGS84 للـ GPS)</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">Export الـ Layer لـ GDB</div><div class="step-desc">كليك يمين على الـ Layer الجديد → Data → Export Features → GDB</div></div></div>
+            </div>
+            <div class="info-box amber">
+              <div class="info-box-title">⚠️ خد بالك من التنسيق</div>
+              Excel بيتعامل مع الأرقام أحياناً كـ Text — تأكد إن الـ Columns بتاعت X,Y نوعها Number في Excel قبل الاستيراد.
+            </div>
+            <div class="quiz-box" id="quiz-p3l2">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عندك Excel فيه بيانات آبار مياه مع عمودي Longitude و Latitude — إيه الأداة المناسبة؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l2',false)">Table To Table</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l2',true)">XY Table To Point</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l2',false)">KML To Layer</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p3l2',false)">Feature Class To Feature Class</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p3l2"></div>
+            </div>
+          </div>`
+      }
+    ]
+  },
+  {
+    id: 'p4',
+    title: 'أدوات التحليل المكاني',
+    color: '#20c67a',
+    bg: 'rgba(32,198,122,.12)',
+    dot: '#20c67a',
+    lessons: [
+      {
+        id: 'p4l1',
+        title: 'Geoprocessing — الأدوات الأساسية',
+        mins: 35,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(32,198,122,.12);color:#30a973">المرحلة 4 — التحليل</div>
+            <div class="lesson-title">Geoprocessing — الأدوات الأساسية</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 35 دقيقة</div><div class="meta-item">🎯 مهم جداً</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>الـ Geoprocessing هو قلب التحليل المكاني في ArcGIS Pro. هنا بتعمل العمليات الحسابية والتحليلية على بياناتك الجغرافية.</p>
+            <h3>الأدوات الأساسية الـ 6</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">🔵</div><div class="step-body"><div class="step-title">Buffer</div><div class="step-desc">بتعمل منطقة نفوذ حول Feature. مثال: منطقة بنطاق 500م حول كل بئر مياه — لتحديد مناطق الخدمة</div></div></div>
+              <div class="step-card"><div class="step-num">✂️</div><div class="step-body"><div class="step-title">Clip</div><div class="step-desc">بتقطع Layer بشكل Layer تاني. مثال: قطع شبكة الطرق الكلية بحدود المحافظة</div></div></div>
+              <div class="step-card"><div class="step-num">➕</div><div class="step-body"><div class="step-title">Union</div><div class="step-desc">بتدمج Layer تنين ببعض وبتخلي مساحاتهم الكلية. مثال: دمج حدود محافظتين في Layer واحدة</div></div></div>
+              <div class="step-card"><div class="step-num">🔗</div><div class="step-body"><div class="step-title">Spatial Join</div><div class="step-desc">بيربط بيانات الـ Features بناءً على موقعها الجغرافي. مثال: إضافة اسم المحافظة لكل بئر مياه تلقائياً</div></div></div>
+              <div class="step-card"><div class="step-num">🌊</div><div class="step-body"><div class="step-title">Dissolve</div><div class="step-desc">بيدمج Features بناءً على قيمة حقل مشترك. مثال: دمج المراكز في محافظة واحدة</div></div></div>
+              <div class="step-card"><div class="step-num">🎯</div><div class="step-body"><div class="step-title">Select by Location</div><div class="step-desc">بيختار Features بناءً على علاقتها المكانية. مثال: اختيار كل الآبار اللي داخلة في منطقة حماية</div></div></div>
+            </div>
+            <div class="info-box green">
+              <div class="info-box-title">✅ مشروع: تحديد المساجد اللي تحتاج صيانة</div>
+              1. عندك Layer للمساجد (Points) وLayer للأحياء (Polygons)<br>
+              2. Buffer حول كل مسجد 200م<br>
+              3. Spatial Join لإضافة اسم الحي لكل مسجد<br>
+              4. Select by Attributes: الـ Condition = "يحتاج صيانة"<br>
+              5. Export الـ Selection لـ Feature Class جديدة للتقرير
+            </div>
+            <div class="quiz-box" id="quiz-p4l1">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عايز تعرف كل المستشفيات اللي في نطاق 2 كيلومتر من محطات المترو — إيه التسلسل الصح؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p4l1',false)">Clip ثم Dissolve</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p4l1',true)">Buffer (محطات المترو) ثم Select by Location (المستشفيات)</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p4l1',false)">Union ثم Spatial Join</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p4l1"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p4l2',
+        title: 'ModelBuilder — أتمتة العمليات',
+        mins: 30,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(32,198,122,.12);color:#30a973">المرحلة 4</div>
+            <div class="lesson-title">ModelBuilder — أتمتة العمليات</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 30 دقيقة</div><div class="meta-item">🎯 متقدم</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>الـ ModelBuilder بيخليك تربط الأدوات ببعض بصرياً — وتشغل العملية الكلية بضغطة زرار.</p>
+            <h3>إزاي تبدأ ModelBuilder</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Analysis → ModelBuilder</div><div class="step-desc">بيفتح نافذة فاضية — هنا بترسم الـ Workflow بتاعك</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Drag & Drop الأدوات</div><div class="step-desc">اجرار أي Tool من الـ Geoprocessing Pane على الـ Model Canvas — هيظهر كـ Box</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">ربط الأدوات</div><div class="step-desc">Output من أداة → Input لأداة تانية. بترسم سهم بينهم — ArcGIS بيعمل الاتصال تلقائياً</div></div></div>
+              <div class="step-card"><div class="step-num">4</div><div class="step-body"><div class="step-title">Run وحفظ Model</div><div class="step-desc">Run → اشغل الـ Model كله. Save في Toolbox — عشان تشغله تاني على بيانات جديدة</div></div></div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 Model Parameters — خلي الـ Model مرن</div>
+              كليك يمين على الـ Input Box → Parameter. ده بيخلي الـ Model يسألك كل مرة تشغله عن البيانات — زي Tool اتعملت بنفسك.
+            </div>
+            <div class="info-box green">
+              <div class="info-box-title">✅ مثال Model بسيط</div>
+              Input: Layer شبكة طرق → Buffer (500م) → Clip (بحدود المدينة) → Output: مناطق التأثير داخل المدينة
+            </div>
+            <div class="quiz-box" id="quiz-p4l2">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">إيه الميزة الأساسية لـ ModelBuilder؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p4l2',false)">تسريع حسابات الـ Raster</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p4l2',true)">أتمتة تسلسل الأدوات وإعادة تشغيله على بيانات مختلفة</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p4l2',false)">إنشاء خرائط 3D</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p4l2"></div>
+            </div>
+          </div>`
+      }
+    ]
+  },
+  {
+    id: 'p5',
+    title: 'Raster والتحليل المتقدم',
+    color: '#30a973',
+    bg: 'rgba(48,169,115,.12)',
+    dot: '#30a973',
+    lessons: [
+      {
+        id: 'p5l1',
+        title: 'Raster Analysis — تحليل التضاريس',
+        mins: 40,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(48,169,115,.12);color:#30a973">المرحلة 5 — متقدم</div>
+            <div class="lesson-title">Raster Analysis — تحليل التضاريس والسطوح</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 40 دقيقة</div><div class="meta-item">🎯 متقدم</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>الـ Raster Analysis بيتعامل مع النماذج الرقمية للارتفاع (DEM) وصور الأقمار الصناعية.</p>
+            <h3>الأدوات الأساسية للـ Raster</h3>
+            <table class="compare-table">
+              <thead><tr><th>الأداة</th><th>الوصف</th><th>الاستخدام</th></tr></thead>
+              <tbody>
+                <tr><td><span class="tag" style="background:rgba(32,198,122,.15);color:#30a973">Slope</span></td><td>حساب درجة الانحدار</td><td>تحليل مخاطر الانهيار، صلاحية البناء</td></tr>
+                <tr><td><span class="tag" style="background:rgba(48,169,115,.15);color:#20c67a">Aspect</span></td><td>اتجاه الانحدار</td><td>تحليل الغطاء النباتي، الطاقة الشمسية</td></tr>
+                <tr><td><span class="tag" style="background:rgba(129,207,177,.2);color:#1a7a52">Hillshade</span></td><td>محاكاة الظل من الشمس</td><td>تحسين التصور البصري للتضاريس</td></tr>
+                <tr><td><span class="tag" style="background:rgba(32,198,122,.1);color:#30a973">Reclassify</span></td><td>إعادة تصنيف قيم الـ Raster</td><td>تصنيف الارتفاعات لفئات</td></tr>
+                <tr><td><span class="tag" style="background:rgba(48,169,115,.12);color:#20c67a">Raster Calculator</span></td><td>عمليات حسابية بين Rasters</td><td>NDVI، دمج طبقات التحليل</td></tr>
+              </tbody>
+            </table>
+            <h3>مثال تطبيقي: تحديد مواقع مناسبة للزراعة</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Slope من الـ DEM</div><div class="step-desc">أماكن الانحدار أقل من 15 درجة = مناسبة للزراعة</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Reclassify الـ Slope</div><div class="step-desc">0-15 درجة = 1 (مناسب)، أكتر من 15 = 0 (مش مناسب)</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">Raster Calculator</div><div class="step-desc">دمج طبقة الانحدار + طبقة نوع التربة + طبقة المياه بأوزان مختلفة</div></div></div>
+              <div class="step-card"><div class="step-num">4</div><div class="step-body"><div class="step-title">Raster To Polygon</div><div class="step-desc">تحويل النتيجة لـ Vector عشان تستخدمها في تقرير أو طباعة</div></div></div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 الـ NDVI — مؤشر الغطاء النباتي</div>
+              NDVI = (Band NIR - Band Red) / (Band NIR + Band Red)<br>
+              القيم الموجبة الكبيرة = غطاء نباتي كثيف.
+            </div>
+            <div class="quiz-box" id="quiz-p5l1">
+              <div class="quiz-label">اختبر نفسك</div>
+              <div class="quiz-q">عايز تعرف اتجاه انحدار الجبل (شمال / جنوب / شرق / غرب) — إيه الأداة؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l1',false)">Slope</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l1',true)">Aspect</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l1',false)">Hillshade</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l1',false)">Reclassify</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p5l1"></div>
+            </div>
+          </div>`
+      },
+      {
+        id: 'p5l2',
+        title: 'ArcGIS Online وإنتاج الخرائط',
+        mins: 30,
+        content: `
+          <div class="lesson-header">
+            <div class="phase-pill" style="background:rgba(48,169,115,.12);color:#30a973">المرحلة 5</div>
+            <div class="lesson-title">ArcGIS Online وإنتاج الخرائط الاحترافية</div>
+            <div class="lesson-meta"><div class="meta-item">⏱ 30 دقيقة</div><div class="meta-item">🎯 عملي</div></div>
+          </div>
+          <div class="lesson-body">
+            <p>المرحلة النهائية — نشر وتشارك عملك. ArcGIS Online بيخليك تحول الخريطة المحلية لتطبيق Web يشوفه أي حد من أي مكان.</p>
+            <h3>من ArcGIS Pro لـ ArcGIS Online</h3>
+            <div class="steps-grid">
+              <div class="step-card"><div class="step-num">1</div><div class="step-body"><div class="step-title">Share → Web Map</div><div class="step-desc">بتختار الـ Layers اللي عايز تنشرها وبتضغط Share — بيرفعهم على حسابك في ArcGIS Online</div></div></div>
+              <div class="step-card"><div class="step-num">2</div><div class="step-body"><div class="step-title">Web Map في ArcGIS Online</div><div class="step-desc">بتقدر تضيف Pop-ups وتغير الـ Symbology وتضيف Filters تفاعلية</div></div></div>
+              <div class="step-card"><div class="step-num">3</div><div class="step-body"><div class="step-title">Survey123 للبيانات الميدانية</div><div class="step-desc">بتعمل استمارة ميدانية والفريق بيملأها بالموبايل — البيانات بتيجي للـ GDB تلقائياً</div></div></div>
+            </div>
+            <div class="info-box blue">
+              <div class="info-box-title">💡 Map Series = أطلس أوتوماتيك</div>
+              عندك 27 محافظة وعايز تعمل خريطة منفصلة لكل محافظة؟ Layout → Insert → Map Series → حدد Index Layer → بيعمل 27 صفحة تلقائياً. Export PDF واحد فيه الكل.
+            </div>
+            <h3>🎉 تهانينا — أكملت الـ Roadmap!</h3>
+            <div class="info-box green">
+              <div class="info-box-title">✅ إيه الخطوة الجاية؟</div>
+              1. طبّق كل درس على بيانات حقيقية من منطقتك<br>
+              2. انضم لـ ESRI Community وشارك مشاريعك<br>
+              3. ابدأ بتعلم Python / ArcPy لأتمتة المهام<br>
+              4. خد Certificate من ESRI في Desktop GIS
+            </div>
+            <div class="quiz-box" id="quiz-p5l2">
+              <div class="quiz-label">اختبر نفسك النهائي</div>
+              <div class="quiz-q">عايز تعمل خريطة منفصلة لكل مركز في المحافظة بنفس التصميم تلقائياً — إيه الأداة؟</div>
+              <div class="quiz-options">
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l2',false)">Export Layout</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l2',false)">Multiple Layouts</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l2',true)">Map Series</div>
+                <div class="quiz-opt" onclick="checkQuiz(this,'p5l2',false)">ArcGIS Online</div>
+              </div>
+              <div class="quiz-feedback" id="qf-p5l2"></div>
+            </div>
+          </div>`
+      }
+    ]
+  }
+];
+
+let currentView = 'welcome', currentPhaseIdx = 0, currentLessonIdx = 0;
+let completed = new Set(JSON.parse(localStorage.getItem('gis_done2') || '[]'));
+
+function saveCompleted() { localStorage.setItem('gis_done2', JSON.stringify([...completed])); }
+function totalLessons() { return curriculum.reduce((s,p) => s + p.lessons.length, 0); }
+
+function updateStats() {
+  const total = totalLessons(), done = completed.size, pct = Math.round((done/total)*100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-left').textContent = total - done;
+  document.getElementById('stat-total').textContent = total;
+}
+
+function buildNav() {
+  const nav = document.getElementById('nav-content');
+  nav.innerHTML = '';
+  curriculum.forEach((phase, pi) => {
+    const div = document.createElement('div');
+    div.className = 'nav-phase';
+    const doneInPhase = phase.lessons.filter(l => completed.has(l.id)).length;
+    const isActivePhase = currentView !== 'welcome' && currentPhaseIdx === pi;
+    div.innerHTML = `
+      <div class="phase-header-nav ${isActivePhase?'active':''}" onclick="goPhase(${pi})">
+        <div class="phase-dot" style="background:${phase.color}"></div>
+        <div class="phase-nav-title">${phase.title}</div>
+        <div class="phase-count">${doneInPhase}/${phase.lessons.length}</div>
+      </div>
+      <div class="lesson-list" id="ll-${pi}" style="${isActivePhase?'':'display:none'}">
+        ${phase.lessons.map((l,li)=>{
+          const isDone=completed.has(l.id), isActive=currentView!=='welcome'&&currentPhaseIdx===pi&&currentLessonIdx===li;
+          return `<div class="lesson-nav-item ${isDone?'done':''} ${isActive?'active':''}" onclick="goLesson(${pi},${li})">
+            <div class="check-icon ${isDone?'done':isActive?'active':''}">${isDone?'✓':''}</div>
+            <span>${l.title}</span></div>`;
+        }).join('')}
+      </div>`;
+    nav.appendChild(div);
+  });
+}
+
+function goPhase(pi) {
+  currentPhaseIdx = pi; currentView = 'lesson';
+  document.querySelectorAll('[id^="ll-"]').forEach((el,i)=>{ el.style.display=(i===pi)?'block':'none'; });
+  goLesson(pi,0);
+}
+
+function showWelcome() {
+  currentView = 'welcome';
+  document.getElementById('breadcrumb').innerHTML = '<span>الرئيسية</span>';
+  document.getElementById('btn-prev').disabled = true;
+  document.getElementById('btn-next').textContent = 'ابدأ التعلم ←';
+  document.getElementById('btn-next').onclick = () => goLesson(0,0);
+  const phasesHTML = curriculum.map((p,pi)=>{
+    const done = p.lessons.filter(l=>completed.has(l.id)).length;
+    return `<div class="phase-overview-card" onclick="goPhase(${pi})">
+      <div class="phase-ov-num" style="background:${p.bg};color:${p.color}">${pi+1}</div>
+      <div class="phase-ov-body"><div class="phase-ov-title">${p.title}</div><div class="phase-ov-sub">${p.lessons.length} دروس</div></div>
+      <div class="phase-ov-count" style="color:${p.color}">${done}/${p.lessons.length}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('main-content').innerHTML = `
+    <div class="welcome-screen">
+      <div class="welcome-title">مسار تعلم<br><span class="accent">ArcGIS Pro</span> <span class="accent2">من الصفر</span></div>
+      <div class="welcome-desc">رحلة منظمة من أساسيات الواجهة وأنواع البيانات، مروراً بإنشاء الـ GDB والـ Domains، وصولاً لأدوات التحليل المتقدمة — كل درس فيه شرح ومثال عملي واختبار.</div>
+      <div class="phases-overview">${phasesHTML}</div>
+      <button class="start-btn" onclick="goLesson(0,0)">ابدأ من الأول ←</button>
+    </div>`;
+  buildNav();
+}
+
+function goLesson(pi, li) {
+  currentPhaseIdx = pi; currentLessonIdx = li; currentView = 'lesson';
+  const phase = curriculum[pi], lesson = phase.lessons[li], isDone = completed.has(lesson.id);
+  let flatIdx = 0;
+  for(let i=0;i<pi;i++) flatIdx += curriculum[i].lessons.length;
+  flatIdx += li;
+  const totalFlat = totalLessons();
+  document.getElementById('breadcrumb').innerHTML = `
+    <span style="color:${phase.color};font-weight:800">${phase.title}</span>
+    <span style="color:var(--muted)">›</span>
+    <span>${lesson.title}</span>`;
+  const prevBtn = document.getElementById('btn-prev'), nextBtn = document.getElementById('btn-next');
+  prevBtn.disabled = (flatIdx === 0);
+  prevBtn.onclick = () => navigate(-1);
+  nextBtn.textContent = flatIdx === totalFlat-1 ? 'إنهاء ✓' : 'التالي ←';
+  nextBtn.onclick = () => navigate(1);
+  const completeHTML = isDone
+    ? `<div class="complete-hint">تم إكمال هذا الدرس ✓</div><button class="btn-complete done-state">✓ مكتمل</button>`
+    : `<div class="complete-hint">أكملت الدرس؟ علّم عليه</div><button class="btn-complete" onclick="markDone('${lesson.id}')">إتممت الدرس ✓</button>`;
+  document.getElementById('main-content').innerHTML = `<div class="content">${lesson.content}<div class="complete-section">${completeHTML}</div></div>`;
+  buildNav(); window.scrollTo(0,0); updateStats();
+}
+
+function navigate(dir) {
+  let flatIdx = 0;
+  for(let i=0;i<currentPhaseIdx;i++) flatIdx += curriculum[i].lessons.length;
+  flatIdx += currentLessonIdx + dir;
+  if(flatIdx < 0){ showWelcome(); return; }
+  if(flatIdx >= totalLessons()) return;
+  let acc = 0;
+  for(let pi=0;pi<curriculum.length;pi++){
+    if(flatIdx < acc + curriculum[pi].lessons.length){ goLesson(pi, flatIdx-acc); return; }
+    acc += curriculum[pi].lessons.length;
+  }
+}
+
+function markDone(id) {
+  completed.add(id); saveCompleted();
+  showToast('ممتاز! الدرس اتعلم ✓');
+  setTimeout(()=>goLesson(currentPhaseIdx, currentLessonIdx), 800);
+}
+
+function checkQuiz(el, quizId, correct) {
+  const opts = el.parentElement.querySelectorAll('.quiz-opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const fb = document.getElementById('qf-'+quizId);
+  if(correct){ el.classList.add('correct'); fb.textContent='✓ صح! إجابة صحيحة.'; fb.className='quiz-feedback show ok'; }
+  else { el.classList.add('wrong'); [...opts].find(o=>o.onclick?.toString().includes('true'))?.classList.add('correct'); fb.textContent='✗ غلط — الإجابة الصحيحة محددة باللون الأخضر.'; fb.className='quiz-feedback show bad'; }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+updateStats();
+showWelcome();
+</script>
+</body>
+</html>
